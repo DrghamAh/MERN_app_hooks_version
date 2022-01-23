@@ -13,10 +13,17 @@ function EditUser() {
   });
 
   useEffect(() => {
+    console.log(id);
     axios.get(`http://localhost:5000/users/${id}`).then(response => {
-      setUser(response.data);
+      console.log(response.data);
+      setUser({
+        name : response.data.name,
+        email :  response.data.email,
+        password : response.data.password,
+        phone : response.data.phone,
+      });
     });
-  }, [user])
+  }, [])
 
   const [errors, setErrors] = useState([]);
 
@@ -62,7 +69,7 @@ function EditUser() {
   }
 
   const handleSaveData = user => {
-    axios.post('http://localhost:5000/users', {
+    axios.put(`http://localhost:5000/users/${id}`, {
       name : user.name,
       email : user.email,
       password : user.password,

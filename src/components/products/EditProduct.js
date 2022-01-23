@@ -8,7 +8,7 @@ const EditProduct = () => {
     name : '',
     price : Number,
     quantity : Number,
-    catgory_id : '',
+    category_id : '',
   });
 
   const [categories, setCategories] = useState([])
