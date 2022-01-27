@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {Link, useParams} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 
 const EditProduct = () => {
-  const [id, setId] = useState(useParams().id);
+  const [id] = useState(useParams().id);
   const [product, setProduct] = useState({
     name : '',
     price : Number,
@@ -24,7 +24,7 @@ const EditProduct = () => {
       setProduct(product => ({...product, quantity : response.data.quantity}));
       setProduct(product => ({...product, category_id : response.data.category_id}));
     })
-  }, []);
+  }, [id]);
 
   const handleNameChange = (e) => {
     setProduct(product => ({...product, name : e.target.value}));

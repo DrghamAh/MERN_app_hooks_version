@@ -1,36 +1,30 @@
-import {React, useEffect, useState} from "react";
+import {React, useContext} from "react";
 import axios from 'axios';
 import {Link} from "react-router-dom";
-
-
+import { CategoriesContext, ProductsContext } from "../../App";
 
 const ProductList = () => {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    axios.get('http://localhost:5000/categories').then(response => {
-      setCategories(response.data);
-    });
-    axios.get('http://localhost:5000/products').then((response) => {
-      setProducts(response.data);
-    })
-  }, [])
+  const {products, dispatch} = useContext(ProductsContext);
+  const {categories} = useContext(CategoriesContext);
 
   const handleDelete = (id) => {
-    axios.delete('http://localhost:5000/products', {
-      data : {
-        id : id
-      }
-    }).then(response => {
-      setProducts(products.filter(product => {
-        if (product.id != id) return product
-      }));
-    });
+    try {
+      const result = axios.delete('http://localhost:5000/products', {
+        data : {
+          id : id
+        }
+      })
+      dispatch({type : 'FETCH_SUCCESS', payload : products.data.filter(product => {
+        if (product.id !== id) return product
+      })})
+    } catch (error) {
+      dispatch({type : 'FETCH_FAILED', payload : error})
+    }
+    
   }
 
   const category_name = (id) => {
-    const category = categories.find(({ _id }) => _id == id);
+    const category = categories.data.find(({ _id }) => _id === id);
     return category !== undefined ? category.name : '';
   }
 
@@ -50,7 +44,7 @@ const ProductList = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product, index) => (
+          {products.data.map((product, index) => (
             <tr key={index}>
               <td>{product.name}</td>
               <td>{product.price}</td>

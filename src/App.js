@@ -15,46 +15,139 @@ import Category_details from './components/categories/Category_details';
 import Users from './components/users/Users';
 import AddUser from './components/users/AddUser';
 import EditUser from './components/users/EditUser';
+import React, { useReducer, useEffect } from 'react';
+import axios from 'axios';
+
+export const CategoriesContext = React.createContext();
+export const ProductsContext = React.createContext();
+
+const categoriesInitialState = {
+  data : [],
+  loading : true,
+  error : '',
+}
+
+const productsInitialState = {
+  data : [],
+  loading : true,
+  error : '',
+}
+
+const categoriesReducer = (currentState, action) => {
+  switch (action.type) {
+    case "FETCH_SUCCESS" : 
+      return {
+        data : action.payload,
+        loading : false,
+        error : '',
+      }
+    case "FETCH_FAILED" : 
+      return {
+        data : [],
+        loading : false,
+        error : action.payload,
+      }
+    case "FETCH_LOADING" :
+      return {
+        data : [],
+        loading : true,
+        error : '',
+      }
+    default : return currentState;
+  }
+}
+
+const productsReducer = (currentState, action) => {
+  switch (action.type) {
+    case "FETCH_SUCCESS" :
+      return {
+        data : action.payload,
+        loading : false,
+        error : '',
+      }
+    case "FETCH_FAILED" :
+      return {
+        data : [],
+        loading : false,
+        error : '',
+      }
+    case "FETCH_LOADING" :
+      return {
+        data : [],
+        loading : true,
+        error : '',
+      }
+    case "MODIFICATION_SUCCESS" :
+      return {
+        data : action.payload,
+        loading : false,
+        error : '',
+      }
+    case "MODIFICATION_FAILED" :
+      return {
+        data : currentState.data,
+        loading: false,
+        error : action.payload,
+      }
+    default : return currentState;
+  }
+}
 
 function App() {
+  const [categories, dispatchCategories] = useReducer(categoriesReducer, categoriesInitialState);
+  const [products, dispatchProducts] = useReducer(productsReducer, productsInitialState);
+
+  useEffect(async () => {
+    dispatchCategories({type : 'FETCH_LOADING'});
+    try {
+      const result = await axios.get('http://localhost:5000/categories');
+      dispatchCategories({type : 'FETCH_SUCCESS', payload : result.data})
+    } catch(err) {
+      dispatchCategories({type : 'FETCH_FAILED', payload : err});
+    }
+
+    dispatchProducts({type : 'FETCH_LOADING'});
+    try {
+      const result = await axios.get('http://localhost:5000/products');
+      dispatchProducts({type : 'FETCH_SUCCESS', payload : result.data});
+    } catch (err) {
+      dispatchProducts({type : 'FETCH_FAILED', payload : err});
+    }
+  }, [])
+
   return (
-    <div className="">
+    <>
+      <CategoriesContext.Provider value={{categories, dispatch : dispatchCategories}}>
+      <ProductsContext.Provider value={{products, dispatch : dispatchProducts}} >
       <Router>
         <Header />
         <div className='container'>
         <Switch>
-          <Route exact path="/">
-            <Home />
-          </Route>
-          <Route exact path="/categories">
+          <Route exact path="/" component={Home} />
+          <Route exact path="/categories" >
             <Categories />
           </Route>
           <Route exact path="/categories/:id" component={Category_details} />
-          <Route exact path="/categories/add">
-            <AddCategory />
+          <Route exact path="/categories/add" component={AddCategory} />
+          <Route exact path="/categories/update/:id" component={EditCategory} />
+          <Route exact path="/products" >
+            <ProductList />
           </Route>
-          <Route exact path="/categories/update/:id" >
-            <EditCategory />
-          </Route>
-          <Route exact path="/products">
-            <ProductList /> 
-          </Route>
-          <Route exact path="/products/add">
+          <Route exact path="/products/add" >
             <AddProduct />
           </Route>
-          <Route exact path="/products/update/:id">
-            <EditProduct />
-          </Route>
-          <Route exact path="/products/:id">
-            <Product_Details />
-          </Route>
+          <Route exact path="/products/update/:id" component={EditProduct} />
+          <Route exact path="/products/:id" component={Product_Details} />
           <Route exact path="/users" component={Users} />
           <Route exact path="/users/add" component={AddUser} />
           <Route exact path="/users/edit/:id" component={EditUser} />
         </Switch>
         </div>
       </Router>
-    </div>
+      </ProductsContext.Provider>
+      </CategoriesContext.Provider>
+      
+    </>
   );
 }
 

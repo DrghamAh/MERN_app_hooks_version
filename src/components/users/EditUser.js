@@ -23,7 +23,7 @@ function EditUser() {
         phone : response.data.phone,
       });
     });
-  }, [])
+  }, [id])
 
   const [errors, setErrors] = useState([]);
 

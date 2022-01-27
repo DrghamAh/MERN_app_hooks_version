@@ -1,9 +1,7 @@
 import axios from "axios";
-import {React, useState, useEffect} from "react";
-import {useForm} from 'react-hook-form';
-// import * as yup from 'yup';
-// import {yup} from '@hookform/resolvers'
+import {React, useState, useContext} from "react";
 import Joi from 'joi-browser';
+import { CategoriesContext, ProductsContext } from "../../App";
 
 const AddProduct = () => {
   const [product, setProduct] = useState({
@@ -13,35 +11,20 @@ const AddProduct = () => {
     category_id : '',
   });
 
-  const [categories, setCategories] = useState([]);
+  const {categories} = useContext(CategoriesContext);
+  const {products, dispatch} = useContext(ProductsContext);
 
   const [errors, setErrors] = useState([]);
 
-  const { register, handleSubmit, errs } = useForm()
-
-  useEffect(() => {
-    axios.get('http://localhost:5000/categories').then(response => {
-      setCategories(response.data);
-    });
-  }, []);
-
-
-  const handleNameChange = (e) => {
-    setProduct(product => ({...product, name : e.target.value}));
+  const handleInputChange = (e) => {
+    switch (e.target.name) {
+      case 'name' : setProduct(product => ({...product, name : e.target.value})); break;
+      case 'price' : setProduct(product => ({...product, price : e.target.value})); break;
+      case 'quantity' : setProduct(product => ({...product, quantity : e.target.value})); break;
+      case 'category_id' : setProduct(product => ({...product, category_id : e.target.value})); break;
+      default : setProduct(product => ({...product}));
+    }
   }
-
-  const handlePriceChange = (e) => {
-    setProduct(product => ({...product, price : e.target.value}));
-  }
-
-  const handleQuantityChange = (e) => {
-    setProduct(product => ({...product, quantity : e.target.value}));
-  }
-
-  const handleCategoryIdChange = (e) => {
-    setProduct(product => ({...product, category_id : e.target.value}));
-  }
-
   
   const schema = {
     name : Joi.string().required(),
@@ -73,49 +56,59 @@ const AddProduct = () => {
     }
   }
 
-  const handleSave = (product) => {
+  const handleSave = async (product) => {
     console.log(product);
-    axios.post('http://localhost:5000/products', {
-      name : product.name,
-      price : product.price,
-      quantity : product.quantity,
-      category_id : product.category_id,
-    }).then((response) => {
-      console.log(response);
-    }).catch(err => {
-      console.log(err);
-    });
+    try {
+      const result = await axios.post('http://localhost:5000/products', {
+        name : product.name,
+        price : product.price,
+        quantity : product.quantity,
+        category_id : product.category_id,
+      });
+      dispatch({type : 'MODIFICATION_SUCCESS', payload : products.data.push(product)})
+      setProduct({
+        name : '',
+        price : '',
+        quantity : '',
+        category_id : '',
+      })
+    } catch (error) {
+      console.log(error);
+    }
   }
-
-  const onSubmit = (data) => console.log(data);
 
   return (
     <>
-      <form onSubmit={validateForm}>
+      <form onSubmit={validateForm} encType="multipart-form">
         <div className="form-group">
           <label htmlFor="name">Name</label>
-          <input type="text" name="name" className="form-control" value={product.name} onChange={handleNameChange} />
+          <input type="text" name="name" className="form-control" value={product.name} onChange={handleInputChange} />
           <span className="text-danger">{errors.name ? errors.name : ''}</span>
         </div>
         <div className="form-group">
           <label htmlFor="price">Price</label>
-          <input type="text" name="price" className="form-control" value={product.price} onChange={handlePriceChange} />
+          <input type="text" name="price" className="form-control" value={product.price} onChange={handleInputChange} />
           <span className="text-danger">{errors.price ? errors.price : ''}</span>
         </div>
         <div className="form-group">
           <label htmlFor="quantity">Quantity</label>
-          <input type="text" name="quantity" className="form-control" value={product.quantity} onChange={handleQuantityChange} />
+          <input type="text" name="quantity" className="form-control" value={product.quantity} onChange={handleInputChange} />
           <span className="text-danger">{errors.quantity ? errors.quantity : ''}</span>
         </div>
         <div className="form-group">
           <label htmlFor="quantity">Quantity</label>
-          <select name="category_id" className="form-control" onChange={handleCategoryIdChange}>
+          <select name="category_id" className="form-control" onChange={handleInputChange}>
             <option>Select</option>
-            {categories.map(category => {
+            {categories.data.map(category => {
               return (<option value={category._id}>{category.name}</option>)
             })}
           </select>
           <span className="text-danger">{errors.category_id ? errors.category_id : ''}</span>
+        </div>
+        <div className="form-group">
+          <label htmlFor="image">Product Image</label>
+          <input type="file" name="image" className="form-control" />
+          <span className="text-danger"></span>
         </div>
         <button type="submit" className="btn btn-primary">Add</button>
       </form>

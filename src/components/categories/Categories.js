@@ -1,29 +1,21 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
 import {Link} from "react-router-dom";
+import { CategoriesContext } from "../../App";
 
 const Categories = () => {
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    axios.get('http://localhost:5000/categories').then((response) => {
-      setCategories(response.data);
-    })
-  }, []);
+  const {categories, dispatch} = useContext(CategoriesContext);
 
   const handleDelete = (id) => {
-    axios.delete('http://localhost:5000/categories', {
-      data : {
-        id : id,
-      }
-    }).then(response => {
-      setCategories(categories.filter(category => {
-        if (category.id != id) return category;
-      }));
-      console.log(response);
-    }).catch(err => {
-      console.log(err);
-    });
+    dispatch({type : 'FETCH_LOADING'});
+    try {
+      const result = axios.delete(`http://localhost:5000/categories/${id}`);
+      dispatch({type : 'FETCH_SUCCESS', payload : categories.data.filter(category => {
+        if (category.id !== id) return category;
+      })})
+    } catch (err) {
+      dispatch({type : 'FETCH_FAILED', payload : err});
+    }
   }
 
   return (
@@ -39,7 +31,8 @@ const Categories = () => {
           </tr>
         </thead>
         <tbody>
-          {categories.map((category, index) => (
+        {categories.loading ? '<tr><td>loading</td></tr>' : 
+          categories.data.map((category, index) => (
             <tr key={index}>
               <td>{category.name}</td>
               <td>
@@ -48,9 +41,12 @@ const Categories = () => {
                 <button className="btn btn-outline-danger" onClick={() => handleDelete(category._id)} ><i className="fa fa-trash"></i></button>
               </td>
             </tr>
-          ))}
+          ))
+        }
+        {categories.error && ''}
         </tbody>
       </table>
+
     </>
   );
 }
