@@ -6,8 +6,8 @@ import { CategoriesContext, ProductsContext } from "../../App";
 const AddProduct = () => {
   const [product, setProduct] = useState({
     name : '',
-    price : Number,
-    quantity : Number,
+    price : 0 || '',
+    quantity : 0 || '',
     category_id : '',
   });
 
@@ -57,7 +57,6 @@ const AddProduct = () => {
   }
 
   const handleSave = async (product) => {
-    console.log(product);
     try {
       const result = await axios.post('http://localhost:5000/products', {
         name : product.name,
@@ -65,13 +64,20 @@ const AddProduct = () => {
         quantity : product.quantity,
         category_id : product.category_id,
       });
-      dispatch({type : 'MODIFICATION_SUCCESS', payload : products.data.push(product)})
+      dispatch({type : 'MODIFICATION_SUCCESS', payload : [...products.data, {
+        _id : result.data._id,
+        name : result.data.name,
+        price : result.data.price,
+        quantity : result.data.quantity,
+        category_id : result.data.category_id,
+      }]})
       setProduct({
         name : '',
         price : '',
         quantity : '',
         category_id : '',
       })
+      console.log(products.data);
     } catch (error) {
       console.log(error);
     }
@@ -98,9 +104,9 @@ const AddProduct = () => {
         <div className="form-group">
           <label htmlFor="quantity">Quantity</label>
           <select name="category_id" className="form-control" onChange={handleInputChange}>
-            <option>Select</option>
-            {categories.data.map(category => {
-              return (<option value={category._id}>{category.name}</option>)
+            <option value="null" >Select</option>
+            {categories.data.map((category, index) => {
+              return (<option key={index} value={category._id}>{category.name}</option>)
             })}
           </select>
           <span className="text-danger">{errors.category_id ? errors.category_id : ''}</span>

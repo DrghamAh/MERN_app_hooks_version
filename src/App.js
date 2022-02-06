@@ -97,22 +97,28 @@ function App() {
   const [categories, dispatchCategories] = useReducer(categoriesReducer, categoriesInitialState);
   const [products, dispatchProducts] = useReducer(productsReducer, productsInitialState);
 
-  useEffect(async () => {
-    dispatchCategories({type : 'FETCH_LOADING'});
-    try {
-      const result = await axios.get('http://localhost:5000/categories');
-      dispatchCategories({type : 'FETCH_SUCCESS', payload : result.data})
-    } catch(err) {
-      dispatchCategories({type : 'FETCH_FAILED', payload : err});
+  useEffect(() => {
+    async function fetchData() {
+      dispatchCategories({type : 'FETCH_LOADING'});
+      try {
+        const result = await axios.get('http://localhost:5000/categories');
+        console.log(result);
+        dispatchCategories({type : 'FETCH_SUCCESS', payload : result.data})
+      } catch(err) {
+        dispatchCategories({type : 'FETCH_FAILED', payload : err});
+      }
+
+      dispatchProducts({type : 'FETCH_LOADING'});
+      try {
+        const result = await axios.get('http://localhost:5000/products');
+        console.log(result);
+        dispatchProducts({type : 'FETCH_SUCCESS', payload : result.data});
+      } catch (err) {
+        dispatchProducts({type : 'FETCH_FAILED', payload : err});
+      }
     }
 
-    dispatchProducts({type : 'FETCH_LOADING'});
-    try {
-      const result = await axios.get('http://localhost:5000/products');
-      dispatchProducts({type : 'FETCH_SUCCESS', payload : result.data});
-    } catch (err) {
-      dispatchProducts({type : 'FETCH_FAILED', payload : err});
-    }
+    fetchData();
   }, [])
 
   return (
@@ -127,8 +133,8 @@ function App() {
           <Route exact path="/categories" >
             <Categories />
           </Route>
-          <Route exact path="/categories/:id" component={Category_details} />
           <Route exact path="/categories/add" component={AddCategory} />
+          <Route exact path="/categories/:id" component={Category_details} />
           <Route exact path="/categories/update/:id" component={EditCategory} />
           <Route exact path="/products" >
             <ProductList />

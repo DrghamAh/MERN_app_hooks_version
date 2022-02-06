@@ -1,23 +1,26 @@
 import axios from 'axios';
-import Joi from 'joi';
-import {React, useState, useEffect } from 'react';
-import validate from 'react-joi-validation';
+import {React, useContext, useState } from 'react';
+import { CategoriesContext } from '../../App';
 
 const AddCategory = () => {
   const [name, setName] = useState('');
+
+  const {categories, dispatch} = useContext(CategoriesContext);
 
   const handleNameChange = (e) => {
     setName(e.target.value);
   }
 
-  const handleFormSubmit = (e) => {
-    axios.post('http://localhost:5000/categories', {
-      name : name,
-    }).then(response => {
-      console.log(response);
-    }).catch(err => {
-      console.log(err);
-    });
+  const handleFormSubmit = async (e) => {
+    try {
+      const result = await axios.post('http://localhost:5000/categories', {
+        name : name,
+      });
+      dispatch({type : "FETCH_SUCCESS", payload : [...categories, result.data]});
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 
 
