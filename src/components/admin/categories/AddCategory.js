@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {React, useContext, useState } from 'react';
-import { CategoriesContext } from '../../App';
+import { CategoriesContext } from '../AdminDashborad';
 
 const AddCategory = () => {
   const [name, setName] = useState('');

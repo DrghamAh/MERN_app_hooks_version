@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useContext } from "react";
 import {Link} from "react-router-dom";
-import { CategoriesContext, ProductsContext } from "../../App";
+import { CategoriesContext, ProductsContext } from '../AdminDashborad';
 
 const Categories = () => {
   const {categories, dispatch} = useContext(CategoriesContext);

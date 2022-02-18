@@ -1,17 +1,25 @@
-import {React, useContext} from "react";
+import {React, useContext, useState} from "react";
 import axios from 'axios';
 import {Link} from "react-router-dom";
-import { CategoriesContext, ProductsContext } from "../../App";
+import { CategoriesContext, ProductsContext } from '../AdminDashborad';
 
 const ProductList = () => {
+  const [userInfo] = useState(JSON.parse(localStorage.getItem('user_info')));
   const {products, dispatch} = useContext(ProductsContext);
   const {categories} = useContext(CategoriesContext);
 
   const handleDelete = (id) => {
+
     console.log(id);
     console.log(products.data.filter(product => product._id !== id));
     try {
-      const result = axios.delete(`http://localhost:5000/products/${id}`);
+      const result = axios.delete(`http://localhost:5000/products/${id}`, {
+        headers : {
+          'Content-type' : 'application/json',
+          'Autherization' : 'application/json',
+          'Token': userInfo,
+        }
+      });
       console.log(result);
       dispatch({type : 'MODIFICATION_SUCCESS', payload : products.data.filter(product => 
         product._id !== id
@@ -54,7 +62,7 @@ const ProductList = () => {
                 <td>
                   <Link className="btn btn-outline-primary" to={`/products/update/${product._id}`} ><i className="fa fa-pencil"></i></Link>
                   <Link className="btn btn-outline-warning" to={`/products/${product._id}`} ><i className="fa fa-eye"></i></Link>
-                  <button type="button" className="btn btn-outline-danger" onClick={() => handleDelete(product._id)}><i className="fa fa-trash"></i></button>
+                  <button type="button" className="btn btn-outline-danger" onClick={() => handleDelete(product._id)} ><i className="fa fa-trash"></i></button>
                 </td>
               </tr>
             ))}

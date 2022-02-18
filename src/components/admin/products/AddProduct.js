@@ -1,7 +1,8 @@
 import axios from "axios";
 import {React, useState, useContext} from "react";
 import Joi from 'joi-browser';
-import { CategoriesContext, ProductsContext } from "../../App";
+import { CategoriesContext, ProductsContext } from '../AdminDashborad';
+import AlertMessage from "../messages/AlertMessage";
 
 const AddProduct = () => {
   const [product, setProduct] = useState({
@@ -15,6 +16,7 @@ const AddProduct = () => {
   const {products, dispatch} = useContext(ProductsContext);
 
   const [errors, setErrors] = useState([]);
+  const [success, setSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     switch (e.target.name) {
@@ -35,9 +37,8 @@ const AddProduct = () => {
   
   const validateForm = (e) => {
     e.preventDefault();
-    const result = Joi.validate(product, schema, {abortEarly : false});
+    const {error, value} = Joi.validate(product, schema, {abortEarly : false});
     // console.log(result.error);
-    const {error, value} = result;
     
     if (!error) {
       handleSave(value);
@@ -77,6 +78,7 @@ const AddProduct = () => {
         quantity : '',
         category_id : '',
       })
+      setSuccess(true);
       console.log(products.data);
     } catch (error) {
       console.log(error);
@@ -85,6 +87,10 @@ const AddProduct = () => {
 
   return (
     <>
+      {
+        success && 
+        <AlertMessage type="success" content={`Product has added successfully`} />
+      }
       <form onSubmit={validateForm} encType="multipart-form">
         <div className="form-group">
           <label htmlFor="name">Name</label>
